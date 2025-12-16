@@ -1,0 +1,36 @@
+# aks-deployment-payment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service-deployment
+  labels:
+    app: payment-service
+spec:
+  replicas: 2 # Número de instancias que quieres correr
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service-container
+        # MARCADOR DE POSICIÓN que Azure DevOps va a reemplazar con la imagen de ACR
+        image: __IMAGE__ 
+        ports:
+        - containerPort: 8080 # Asegúrate que este puerto coincida con tu Dockerfile/Kestrel
+---
+# Definición de Service (para exponer el microservicio)
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service-svc
+spec:
+  type: LoadBalancer # Para acceder desde fuera de AKS (si lo necesitas)
+  ports:
+  - port: 80 # Puerto externo de AKS
+    targetPort: 8080 # Puerto interno del contenedor
+  selector:
+    app: payment-service
